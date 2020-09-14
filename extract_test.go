@@ -20,12 +20,12 @@ func TestExtractArticle(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	article, s, err := ExtractArticle(html)
+	article, err := ExtractArticle(html)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("title: %s\n", article.Title)
-	fmt.Printf("score: %.4f\n", s)
+	fmt.Printf("score: %.4f\n", article.Score)
 	fmt.Printf("summary: %s\n", article.Summary)
 	fmt.Printf("content: %s\n", article.ContentText)
 	fmt.Printf("contentHtml: %s\n", article.ContentHTML)
