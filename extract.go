@@ -1,5 +1,5 @@
 // 这个包的主要作用就是导出网页正文，一般适用于新闻页
-package article
+package article_extract
 
 import (
 	"fmt"
