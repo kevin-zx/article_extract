@@ -153,11 +153,7 @@ func getArticleInfo(html string) (title string, summary string, err error) {
 // compute node info
 func computeInfo(node *goquery.Selection, nodeMap map[*goquery.Selection]*NodeInfo) *NodeInfo {
 	var nodeInfo = &NodeInfo{}
-
-	//if node.AttrOr("class", "") == "icon1" {
-	//	fmt.Println("111")
-	//}
-
+	
 	if node.Children().Size() > 0 {
 		if node.Is("p") {
 			nodeInfo.PNum += 1
