@@ -77,8 +77,15 @@ func removeSuccessiveLink(node *goquery.Selection) *goquery.Selection {
 	var successionAs []*goquery.Selection
 	var needRemoveElements []*goquery.Selection
 	lastIndex := 0
+
 	node.Children().Each(func(i int, subNode *goquery.Selection) {
-		subNodeTxt :=getClearTxt(subNode)
+		subNodeTxt := getClearTxt(subNode)
+		// 有些特殊特征的元素可以被删除
+		if len(strings.Split(subNodeTxt, "")) > 64 && (strings.HasPrefix(strings.TrimSpace(subNodeTxt), "上一篇") || strings.HasPrefix(strings.TrimSpace(subNodeTxt), "下一篇")) {
+			needRemoveElements = append(needRemoveElements, successionAs...)
+			lastIndex = i
+			return
+		}
 		// 当前元素是链接元素
 		if subNode.Is("a") {
 			lastIndex = i
@@ -103,10 +110,7 @@ func removeSuccessiveLink(node *goquery.Selection) *goquery.Selection {
 				}
 			}
 		}
-		// 有些特殊特征的元素可以被删除
-		if len(strings.Split(subNodeTxt, ""))>64 && (strings.HasPrefix(strings.TrimSpace(subNodeTxt), "上一篇") || strings.HasPrefix(strings.TrimSpace(subNodeTxt), "下一篇")) {
-			needRemoveElements = append(needRemoveElements, successionAs...)
-		}
+
 		//这里不连续了
 		if lastIndex != 0 && lastIndex != i {
 			// 存储了 2个以上的链接 符合删除的标准
@@ -117,7 +121,6 @@ func removeSuccessiveLink(node *goquery.Selection) *goquery.Selection {
 			successionAs = []*goquery.Selection{}
 			lastIndex = 0
 		}
-
 
 	})
 	for _, element := range needRemoveElements {
