@@ -27,12 +27,13 @@ type Article struct {
 	Summary     string // summary
 	ContentText string
 	ContentHTML string
+	Score       float64
 }
 
-func ExtractArticle(html string) (*Article, float64, error) {
+func ExtractArticle(html string) (*Article, error) {
 	infoMap, err := calculate(html)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	maxScore := 0.0
 	avgScore := 0.0
@@ -56,17 +57,17 @@ func ExtractArticle(html string) (*Article, float64, error) {
 	maxNode = removeSuccessiveLink(maxNode)
 	avgScore = sumScore / float64(len(infoMap))
 	if maxNode == nil {
-		return nil, 0, fmt.Errorf("extract article err, can't get content node")
+		return nil, fmt.Errorf("extract article err, can't get content node")
 	}
 	a := Article{}
 	a.ContentHTML, err = goquery.OuterHtml(maxNode)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	a.ContentText = strings.ReplaceAll(maxNode.Text(), "\n\n", "\n")
-	//fmt.Printf("avgScore rate:%.4f, content:%s \n------------------------------------------------\n", maxScore/avgScore, a.ContentText)
+	a.ContentText = strings.ReplaceAll(getClearTxt(maxNode), "\n\n", "\n")
 	a.Title, a.Summary, err = getArticleInfo(html)
-	return &a, maxScore / avgScore, err
+	a.Score = maxScore / avgScore
+	return &a, err
 }
 
 // 有些网站中会把作者，来源等加上链接放入到文章中，还有就是一个div下面的第一级子节点就分布着标题，内容，上一篇下一篇，推荐等。
@@ -84,7 +85,7 @@ func removeSuccessiveLink(node *goquery.Selection) *goquery.Selection {
 		} else {
 			aChildren := subNode.Find("a")
 			if aChildren.Size() > 0 {
-				tr := float64(len(aChildren.Text())) / float64(len(subNode.Text()))
+				tr := float64(len(getClearTxt(aChildren))) / float64(len(getClearTxt(subNode)))
 				if tr >= 0.6 || aChildren.Size() >= 3 {
 					// 当前元素含有一个 a 元素
 					if aChildren.Length() == 1 {
@@ -124,7 +125,7 @@ func getArticleInfo(html string) (title string, summary string, err error) {
 	if err != nil {
 		return "", "", err
 	}
-	title = doc.Find("H1").Text()
+	title = getClearTxt(doc.Find("H1"))
 	if title == "" {
 		title = doc.Find("title").Text()
 	}
@@ -165,9 +166,9 @@ func computeInfo(node *goquery.Selection, nodeMap map[*goquery.Selection]*NodeIn
 			})
 
 		}
-		nodeInfo.T = len(node.Text())
+		nodeInfo.T = len(getClearTxt(node))
 		if nodeInfo.T > 0 {
-			for _, r := range node.Text() {
+			for _, r := range getClearTxt(node) {
 				if unicode.IsPunct(r) {
 					nodeInfo.Sb += 1
 				}
@@ -182,7 +183,7 @@ func computeInfo(node *goquery.Selection, nodeMap map[*goquery.Selection]*NodeIn
 		// accumulate special tags params
 		if node.Is("a") {
 			nodeInfo.LTG++
-			nodeInfo.LT = len(node.Text())
+			nodeInfo.LT = len(getClearTxt(node))
 		} else if node.Is("p") {
 			nodeInfo.PNum += 1
 		}
@@ -224,13 +225,9 @@ func calculate(html string) (map[*goquery.Selection]*NodeInfo, error) {
 	sd := math.Sqrt(sdp)
 
 	for _, info := range nodeMap {
-
 		// 计算结点信息
 		// calculate node info score
 		// latex formula: score = \log_{}{SD}*ND_i*\log_{10}{(PNum_i)}*\log_{}{SbD_i}
-		//if info.PNum {
-		//
-		//}
 		info.Score = math.Log(sd) * info.TD * math.Log(float64(info.PNum+1)) * math.Log(info.SbD+1)
 	}
 
@@ -251,4 +248,33 @@ func removeScriptAndStyle(html string) (*goquery.Document, error) {
 		s.Remove()
 	})
 	return doc, nil
+}
+func getClearTxt(selection *goquery.Selection) string {
+	content := selection.Text()
+	for strings.Contains(content, " \n") {
+		content = strings.ReplaceAll(content, " \n", "\n")
+	}
+	for strings.Contains(content, "\n\t") {
+		content = strings.ReplaceAll(content, "\n\t", "\n")
+	}
+	for strings.Contains(content, "\n ") {
+		content = strings.ReplaceAll(content, "\n ", "\n")
+	}
+	for strings.Contains(content, "  ") {
+		content = strings.ReplaceAll(content, "  ", " ")
+	}
+	for strings.Contains(content, "\t\t") {
+		content = strings.ReplaceAll(content, "\t\t", "\t")
+	}
+	for strings.Contains(content, "\n\n") {
+		content = strings.ReplaceAll(content, "\n\n", "\n")
+	}
+	for strings.Contains(content, "\t\n") {
+		content = strings.ReplaceAll(content, "\t\n", "\n")
+	}
+
+	//content = strings.ReplaceAll(content,"\n","\\n")
+	//content = strings.ReplaceAll(content,"\t","\\t")
+	//content = strings.ReplaceAll(content," ","\\b")
+	return content
 }
