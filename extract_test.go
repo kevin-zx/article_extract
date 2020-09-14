@@ -15,7 +15,8 @@ func TestCalculate(t *testing.T) {
 }
 
 func TestExtractArticle(t *testing.T) {
-	html, err := http_util.GetWebConFromUrl("http://www.cdcxsj.com/xinwendongtai/gongsixinwen/246.html")
+	html, err := http_util.GetWebConFromUrl("http://www.cdcxsj.com/xinwendongtai/pinpaixuanchuan/209.html")
+	//html, err := http_util.GetWebConFromUrl("http://www.cdcxsj.com/xinwendongtai/gongsixinwen/246.html")
 	//html,err := http_util.GetWebConFromUrl("https://news.163.com/20/0821/04/FKHDIVVD0001899O.html")
 	if err != nil {
 		panic(err)

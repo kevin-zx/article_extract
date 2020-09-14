@@ -81,8 +81,8 @@ func removeSuccessiveLink(node *goquery.Selection) *goquery.Selection {
 	node.Children().Each(func(i int, subNode *goquery.Selection) {
 		subNodeTxt := getClearTxt(subNode)
 		// 有些特殊特征的元素可以被删除
-		if len(strings.Split(subNodeTxt, "")) > 64 && (strings.HasPrefix(strings.TrimSpace(subNodeTxt), "上一篇") || strings.HasPrefix(strings.TrimSpace(subNodeTxt), "下一篇")) {
-			needRemoveElements = append(needRemoveElements, successionAs...)
+		if len(strings.Split(subNodeTxt, "")) < 64 && (strings.HasPrefix(strings.TrimSpace(subNodeTxt), "上一篇") || strings.HasPrefix(strings.TrimSpace(subNodeTxt), "下一篇")) {
+			needRemoveElements = append(needRemoveElements, subNode)
 			lastIndex = i
 			return
 		}
