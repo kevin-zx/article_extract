@@ -28,6 +28,7 @@ type Article struct {
 	ContentText string
 	ContentHTML string
 	Score       float64
+	TextLength  int
 }
 
 func ExtractArticle(html string) (*Article, error) {
@@ -67,6 +68,7 @@ func ExtractArticle(html string) (*Article, error) {
 	a.ContentText = strings.ReplaceAll(getClearTxt(maxNode), "\n\n", "\n")
 	a.Title, a.Summary, err = getArticleInfo(html)
 	a.Score = maxScore / avgScore
+	a.TextLength = len(strings.Split(a.ContentText, ""))
 	return &a, err
 }
 
@@ -153,7 +155,6 @@ func getArticleInfo(html string) (title string, summary string, err error) {
 // compute node info
 func computeInfo(node *goquery.Selection, nodeMap map[*goquery.Selection]*NodeInfo) *NodeInfo {
 	var nodeInfo = &NodeInfo{}
-	
 	if node.Children().Size() > 0 {
 		if node.Is("p") {
 			nodeInfo.PNum += 1
@@ -185,7 +186,6 @@ func computeInfo(node *goquery.Selection, nodeMap map[*goquery.Selection]*NodeIn
 		nodeMap[node] = nodeInfo
 	} else {
 		// 没有子节点的情况下
-
 		// 累加指定结点 (a tag, p tag) 的信息
 		// accumulate special tags params
 		if node.Is("a") {
