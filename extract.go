@@ -40,6 +40,16 @@ func ExtractArticle(html string) (*Article, error) {
 	avgScore := 0.0
 	sumScore := 0.0
 	var maxNode *goquery.Selection
+	if len(infoMap) <= 5 {
+		return &Article{
+			Title:       "",
+			Summary:     "",
+			ContentText: "",
+			ContentHTML: "",
+			Score:       0,
+			TextLength:  0,
+		}, nil
+	}
 	//var maxInfo *NodeInfo
 	for node, info := range infoMap {
 		//h, _ := node.Html()
