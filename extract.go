@@ -40,9 +40,9 @@ func ExtractArticle(html string) (*Article, error) {
 	avgScore := 0.0
 	sumScore := 0.0
 	var maxNode *goquery.Selection
-	if len(infoMap) <= 5 {
-		return nil, fmt.Errorf("can't find page content")
-	}
+	//if len(infoMap) <= 5 {
+	//	return nil, fmt.Errorf("can't find page content")
+	//}
 	//var maxInfo *NodeInfo
 	for node, info := range infoMap {
 		//h, _ := node.Html()
@@ -57,7 +57,9 @@ func ExtractArticle(html string) (*Article, error) {
 		sumScore += info.Score
 	}
 	//fmt.Printf("%+v\n", maxInfo)
-
+	if maxNode == nil {
+		return nil, fmt.Errorf("can't find page content")
+	}
 	maxNode = removeSuccessiveLink(maxNode)
 	avgScore = sumScore / float64(len(infoMap))
 	if maxNode == nil {
